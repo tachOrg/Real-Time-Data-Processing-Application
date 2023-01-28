@@ -8,7 +8,7 @@ const dynamoDBClient = new DynamoDBClient({ region: process.env.AWS_REGION });
 const dynamoDBName = process.env.AWS_DYNAMO_DB_NAME;
 let commandInput = {
   RequestItems: {
-    dynamoDBName : [ 
+    "UnicornSensorData" : [ 
       {
         "PutRequest": {
           "Item": {
