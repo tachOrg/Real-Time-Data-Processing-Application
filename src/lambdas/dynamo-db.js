@@ -8,12 +8,12 @@ const dynamoDBClient = new DynamoDBClient({ region: process.env.AWS_REGION });
 const dynamoDBName = process.env.AWS_DYNAMO_DB_NAME;
 let commandInput = {
   RequestItems: {
-    "UnicornSensorData" : [ 
+    [dynamoDBName] : [ 
       {
         "PutRequest": {
           "Item": {
-            "Name": { "S": "Raelph" },
-            "StatusTime": { "S": "2023-01-27 21:45:00.000" }
+            "Name": { "S": "Bikora" },
+            "StatusTime": { "S": "2023-01-30 19:38:00.000" }
           }
         }
       }
