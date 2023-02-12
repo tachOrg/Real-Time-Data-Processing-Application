@@ -1,0 +1,13 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description:
+  "This stack will create the needs to run the real time processing data environment"
+
+Resources:
+  Type: "Kinesis_Data_Stream"
+  Properties:
+    Name: "rt_stream",
+    RetentionPeriodHours: 24,
+    ShardCount: 1,
+    StreamModeDetails: 
+      StreamMode: "PROVISIONED"
