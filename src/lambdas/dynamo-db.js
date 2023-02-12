@@ -10,7 +10,6 @@ export const handler = function(event, context, callback) {
     "Item": itemInput,
     "TableName": "UnicornSensorData"
   }
-  console.log('RI: ' + JSON.stringify(r));
   insertIntoDB(r);
 };
 
@@ -53,7 +52,6 @@ let commandInput = {
     ]
   }
 };
-// const command = new BatchWriteItemCommand(commandInput);
 
 let insertIntoDB = async (inputFromMain) => {
   try {
@@ -65,4 +63,3 @@ let insertIntoDB = async (inputFromMain) => {
   }
 }
 
-// insertIntoDB();
