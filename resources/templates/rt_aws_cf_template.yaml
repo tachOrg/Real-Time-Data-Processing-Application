@@ -4,10 +4,16 @@ Description:
   "This stack will create the needs to run the real time processing data environment"
 
 Resources:
-  Type: "Kinesis_Data_Stream"
-  Properties:
-    Name: "rt_stream",
-    RetentionPeriodHours: 24,
-    ShardCount: 1,
-    StreamModeDetails: 
-      StreamMode: "PROVISIONED"
+  KinesisDataStream:
+    Type: AWS::Kinesis::Stream
+    Properties:
+      Name: RTStream
+      RetentionPeriodHours: 24
+      ShardCount: 1
+      StreamModeDetails: 
+        StreamMode: PROVISIONED
+  CognitoIdentityPool:
+    Type: AWS::Cognito::IdentityPool
+    Properties:
+      IdentityPoolName: RTPool
+      AllowUnauthenticatedIdentities: true
