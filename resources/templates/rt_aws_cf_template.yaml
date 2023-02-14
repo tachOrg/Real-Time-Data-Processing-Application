@@ -17,3 +17,17 @@ Resources:
     Properties:
       IdentityPoolName: RTPool
       AllowUnauthenticatedIdentities: true
+  DynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: RTTable
+      KeySchema:
+        -
+          AttributeName: Name
+          KeyType: String
+        -
+          AttributeName: Latitude
+          KeyType: String
+        -
+          AttributeName: Longitude
+          KeyType: String
