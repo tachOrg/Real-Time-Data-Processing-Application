@@ -1,7 +1,6 @@
 AWSTemplateFormatVersion: "2010-09-09"
 
-Description:
-  "This stack will create the needs to run the real time processing data environment"
+Description: "This stack will create the needs to run the real time processing data environment"
 
 Resources:
   KinesisDataStream:
@@ -10,27 +9,27 @@ Resources:
       Name: RTStream
       RetentionPeriodHours: 24
       ShardCount: 1
-      StreamModeDetails: 
+      StreamModeDetails:
         StreamMode: PROVISIONED
   DynamoDBTable:
     Type: AWS::DynamoDB::Table
     Properties:
       TableName: RTTable
+      AttributeDefinitions:
+        - AttributeName: Name
+          AttributeType: S
       KeySchema:
-        -
-          AttributeName: Name
-          KeyType: String
-        -
-          AttributeName: Latitude
-          KeyType: String
-        -
-          AttributeName: Longitude
-          KeyType: String
+        - AttributeName: Name
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
   LambdaFunction:
     Type: AWS::Lambda::Function
-    Properties: 
+    Properties:
       Runtime: nodejs18.x
-      Code: 
+      Role: arn:aws:iam::121318827872:role/WildRydesStreamProcessorRole
+      Code:
         ZipFile: |
           import { DynamoDBClient, PutItemCommand } from '@aws-sdk/client-dynamodb';
 
@@ -101,5 +100,3 @@ Resources:
 
           // insertIntoDB();
       Description: Invoke a lambda function that reads from stream and insert into Dynamo DB
-
-
