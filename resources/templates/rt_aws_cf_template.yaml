@@ -24,6 +24,19 @@ Resources:
       ProvisionedThroughput:
         ReadCapacityUnits: 5
         WriteCapacityUnits: 5
+  IAMPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: IAM_Dynamo_Policy
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - 'dynamodb:BatchWriteItem'
+              - 'dynamodb:PutItem'
+            Resource: 'arn:aws:dynamodb:us-east-1:121318827872:table/RTTable'
+    
   LambdaFunction:
     Type: AWS::Lambda::Function
     Properties:
