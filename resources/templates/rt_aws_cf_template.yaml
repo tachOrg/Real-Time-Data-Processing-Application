@@ -46,15 +46,18 @@ Resources:
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
-          - Effect: Allow
+          - 
+            Effect: Allow
             Principal:
               Service:
                 - 'lambda.amazonaws.com'
             Action:
               - 'sts:AssumeRole'
+      Path: '/'
       Policies:
         - PolicyName: IAM_Dynamo_Policy
           PolicyDocument:
+            Version: '2012-10-17'
             Statement:
               - Effect: Allow
                 Action:
@@ -82,7 +85,7 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       Runtime: nodejs18.x
-      Role: arn:aws:iam::121318827872:role/StreamProcessorRole
+      Role: !GetAtt StreamProcessorRole.Arn
       Handler: index.handler
       Code:
         ZipFile: |
@@ -96,7 +99,7 @@ Resources:
             console.log('Item Input: ' + JSON.stringify(itemInput));
             let r = {
               "Item": itemInput,
-              "TableName": "UnicornSensorData"
+              "TableName": "RTTable"
             }
             console.log('RI: ' + JSON.stringify(r));
             insertIntoDB(r);
