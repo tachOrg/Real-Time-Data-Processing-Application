@@ -158,3 +158,9 @@ Resources:
 
           // insertIntoDB();
       Description: Invoke a lambda function that reads from stream and insert into Dynamo DB
+  EventSourceMapping:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      EventSourceArn: !GetAtt KinesisDataStream.Arn
+      FunctionName: !GetAtt LambdaFunction.Arn
+      StartingPosition: 'TRIM_HORIZON'
