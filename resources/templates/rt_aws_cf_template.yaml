@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: "2010-09-09"
 
-Description: "This stack will create the needs to run the real time processing data environment"
+Description: "This stack creates the resources to run the real time processing data application"
 
 Resources:
   KinesisDataStream:
@@ -156,7 +156,6 @@ Resources:
             }
           }
 
-          // insertIntoDB();
       Description: Invoke a lambda function that reads from stream and insert into Dynamo DB
   EventSourceMapping:
     Type: AWS::Lambda::EventSourceMapping
