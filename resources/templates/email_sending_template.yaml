@@ -1,0 +1,14 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: "This stack creates the resources to analyze email sending by events with Amazon Kinesis Data Analytics"
+
+Resources:
+  Firehose: 
+    Type: AWS::KinesisFirehose::DeliveryStream
+    Properties:
+      DeliveryStreamName: "Delivery_Stream_Email_Service"
+      DeliveryStreamType: DirectPut
+      ExtendedS3DestinationConfiguration:
+        BucketARN: arn:aws:s3:::demo-firehose-pablo
+        CompressionFormat: UNCOMPRESSED
+        RoleARN: arn:aws:iam::012345678912:role/service-role/KinesisFirehoseServiceRole-dp-kinesis-f-us-east-1-012345678912[ACTUALIZAR]
