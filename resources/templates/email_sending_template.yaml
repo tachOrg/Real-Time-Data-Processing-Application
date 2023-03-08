@@ -12,3 +12,7 @@ Resources:
         BucketARN: arn:aws:s3:::demo-firehose-pablo
         CompressionFormat: UNCOMPRESSED
         RoleARN: arn:aws:iam::012345678912:role/service-role/KinesisFirehoseServiceRole-dp-kinesis-f-us-east-1-012345678912[ACTUALIZAR]
+  EmailIdentity:
+    Type: AWS::SES::EmailIdentity
+    Properties:
+      EmailIdentity: "developer@rt-app.com"
