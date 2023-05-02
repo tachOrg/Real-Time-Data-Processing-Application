@@ -1,0 +1,165 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: "This stack creates the resources to run the real time processing data application"
+
+Resources:
+  KinesisDataStream:
+    Type: AWS::Kinesis::Stream
+    Properties:
+      Name: RTStream
+      RetentionPeriodHours: 24
+      ShardCount: 1
+      StreamModeDetails:
+        StreamMode: PROVISIONED
+  DynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: RTTable
+      AttributeDefinitions:
+        - AttributeName: Name
+          AttributeType: S
+      KeySchema:
+        - AttributeName: Name
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+  IAMPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: IAM_Dynamo_Policy
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - 'dynamodb:BatchWriteItem'
+              - 'dynamodb:PutItem'
+            Resource: 'arn:aws:dynamodb:us-east-1:121318827872:table/RTTable'
+      Roles:
+        - !Ref StreamProcessorRole
+  StreamProcessorRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: StreamProcessorRole
+      Description: Allows Lambda functions to call AWS services on your behalf.
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - 
+            Effect: Allow
+            Principal:
+              Service:
+                - 'lambda.amazonaws.com'
+            Action:
+              - 'sts:AssumeRole'
+      Path: '/'
+      Policies:
+        - PolicyName: IAM_Dynamo_Policy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'dynamodb:BatchWriteItem'
+                  - 'dynamodb:PutItem'
+                Resource: 'arn:aws:dynamodb:us-east-1:121318827872:table/RTTable'
+        - PolicyName: AWSLambdaKinesisExecutionRole
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'kinesis:DescribeStream'
+                  - 'kinesis:DescribeStreamSummary'
+                  - 'kinesis:GetRecords'
+                  - 'kinesis:GetShardIterator'
+                  - 'kinesis:ListShards'
+                  - 'kinesis:ListStreams'
+                  - 'kinesis:SubscribeToShard'
+                  - 'logs:CreateLogGroup'
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                Resource: '*'
+  LambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Runtime: nodejs18.x
+      Role: !GetAtt StreamProcessorRole.Arn
+      Handler: index.handler
+      Code:
+        ZipFile: |
+          import { DynamoDBClient, PutItemCommand } from '@aws-sdk/client-dynamodb';
+
+          export const handler = function(event, context, callback) {
+            console.log('Este es el event: ' + JSON.stringify(event));
+            const requestItems = buildRequestItems(event.Records[0]);
+            console.log('Request items: ' + JSON.stringify(requestItems))
+            const itemInput = buildRequests(requestItems);
+            console.log('Item Input: ' + JSON.stringify(itemInput));
+            let r = {
+              "Item": itemInput,
+              "TableName": "RTTable"
+            }
+            console.log('RI: ' + JSON.stringify(r));
+            insertIntoDB(r);
+          };
+
+          let buildRequestItems = (records) => {
+            const json = Buffer.from(records.kinesis.data, 'base64').toString('ascii');
+            const item = JSON.parse(json);
+            return {
+              PutRequest: {
+                Item: item
+              }
+            }
+          }
+
+          let buildRequests = (requestItems) => {
+            return {
+              "Name": {
+                S: requestItems.PutRequest.Item.Name
+              },
+              "StatusTime": {
+                S: requestItems.PutRequest.Item.StatusTime
+              }
+            };
+          }
+
+          const dynamoDBClient = new DynamoDBClient({ region: process.env.AWS_REGION });
+          const dynamoDBName = process.env.TABLE_NAME;
+
+          let commandInput = {
+            RequestItems: {
+              [dynamoDBName] : [ 
+                {
+                  "PutRequest": {
+                    "Item": {
+                      "Name": { "S": "Koethl" },
+                      "StatusTime": { "S": "2023-01-30 21:30:00.000" }
+                    }, 
+                    "TableName": [dynamoDBName]
+                  }
+                }
+              ]
+            }
+          };
+          // const command = new BatchWriteItemCommand(commandInput);
+
+          let insertIntoDB = async (inputFromMain) => {
+            try {
+              let finalCommand = new PutItemCommand(inputFromMain);
+              await dynamoDBClient.send(finalCommand);
+              console.log('Pasé el envío');
+            } catch (error) { 
+              console.log('Error: ' + error);
+            }
+          }
+
+      Description: Invoke a lambda function that reads from stream and insert into Dynamo DB
+  EventSourceMapping:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      EventSourceArn: !GetAtt KinesisDataStream.Arn
+      FunctionName: !GetAtt LambdaFunction.Arn
+      StartingPosition: 'TRIM_HORIZON'
